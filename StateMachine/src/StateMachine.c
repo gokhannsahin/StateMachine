@@ -74,7 +74,7 @@ void StateDelay(void){
 			return;
 	}
 
-	printf("Different Time = %d\n",(clock()/CLOCKS_PER_SEC)-CurrentTime);
+	printf("Different Time = %d\n",(int)(clock()/CLOCKS_PER_SEC)-CurrentTime);
 	DelayTiming=0;
 	StateCurrent = StateNext;
 }
