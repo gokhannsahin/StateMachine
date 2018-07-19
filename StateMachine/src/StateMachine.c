@@ -57,6 +57,7 @@ typedef struct{
 }StateMachine_t;
 
 StateType_t StateCurrent=STATE_NEUTRAL;
+StateType_t StatePrev=STATE_NEUTRAL;
 StateType_t StateNext=STATE_NEUTRAL;
 int DelayTiming=0;
 int CurrentTime=0;
@@ -66,6 +67,7 @@ int JosytickBaseType = CAN_J1939;
 void StateNeutral(void);
 void StateNorth(void);
 void StateSouth(void);
+void StateWest(void);
 void StateEast(void);
 void StateNorthWest(void);
 void StateNorthEast(void);
@@ -94,7 +96,6 @@ void StateNeutral(void){
 	// disable interrupt
 	axis=JoystickAxis;
 	int tol=__IS_BETWEEN_TOLERANCE(4950,5000,1);
-	printf("!!!State A = %d \n",tol);
 	// enable interrupt
 
 	//axis check
@@ -104,7 +105,7 @@ void StateNeutral(void){
 		switch (JosytickBaseType) {
 		case CAN_J1939:
 
-			printf("!!!State A\n");
+			printf("!!!StateNeutral\n");
 
 			break;
 		default:
@@ -112,31 +113,62 @@ void StateNeutral(void){
 		}
 	}
 
-	DelayTiming=2;
-	StateNext=STATE_NORTH;
+	DelayTiming=1;
+	switch (StatePrev) {
+	case STATE_NEUTRAL:
+		StateNext=STATE_NORTH;
+		break;
+	case STATE_NORTH:
+		StateNext=STATE_SOUTH;
+		break;
+	case STATE_SOUTH:
+		StateNext=STATE_WEST;
+		break;
+	case STATE_WEST:
+		StateNext=STATE_EAST;
+		break;
+	case STATE_EAST:
+		StateNext=STATE_NORTH;
+		break;
+	default:
+		break;
+	}
+	StatePrev=STATE_NEUTRAL;
 }
 
 void StateNorth(void){
 	StateCurrent = STATE_NORTH;
-	printf("!!!State B\n");
+	printf("!!!StateNorth\n");
 
-	DelayTiming=5;
-	StateNext=STATE_SOUTH;
+	DelayTiming=1;
+	StatePrev=STATE_NORTH;
+	StateNext=STATE_NEUTRAL;
 }
 
 void StateSouth(void){
 	StateCurrent = STATE_SOUTH;
-	printf("!!!State C\n");
+	printf("!!!StateSouth\n");
 
-	DelayTiming=3;
-	StateNext=STATE_WEST;
+	DelayTiming=1;
+	StatePrev=STATE_SOUTH;
+	StateNext=STATE_NEUTRAL;
+}
+
+void StateWest(void){
+	StateCurrent = STATE_WEST;
+	printf("!!!StateWest\n");
+
+	DelayTiming=1;
+	StatePrev=STATE_WEST;
+	StateNext=STATE_NEUTRAL;
 }
 
 void StateEast(void){
-	StateCurrent = STATE_WEST;
-	printf("!!!State D\n");
+	StateCurrent = STATE_EAST;
+	printf("!!!StateEast\n");
 
-	DelayTiming=8;
+	DelayTiming=1;
+	StatePrev=STATE_EAST;
 	StateNext=STATE_NEUTRAL;
 }
 
@@ -154,7 +186,8 @@ StateMachine_t StateMachine[]={
 		{ STATE_NEUTRAL, StateNeutral },
 		{ STATE_NORTH, StateNorth },
 		{ STATE_SOUTH, StateSouth },
-		{ STATE_WEST, StateEast },
+		{ STATE_WEST, StateWest },
+		{ STATE_EAST, StateEast },
 };
 
 void StateRun(void){
